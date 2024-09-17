@@ -1,0 +1,40 @@
+env: mpe_fluid
+
+render_args:
+  srk: [1,2,4]
+  sr_color: ["#2CAFAC","#FB5607", "#1982C4"]
+
+twoagent: False
+agentnames:
+  - agent
+n_agents: 7
+mac: "basic_mac" # "entity_mac" for REFIL/CAMA
+
+env_args:
+  scenario_id: "simple_hunt.py"
+  scenario_config:
+    episode_limit: 200
+    max_n_agents : 7
+    max_n_advs: 7
+    
+    # train(in-domain)
+    num_agents : [1, 3]
+    num_adversaries: [1, 3]
+    intra_trajectory: [1, 1]
+
+    OOD:      
+      # OOD 1
+      - num_agents : [5]
+        num_adversaries: [5]
+        intra_trajectory: [2, 0]
+      # OOD 2
+      - num_agents : [5]
+        num_adversaries: [5]
+        intra_trajectory: [0, 2]
+
+    delta_entities: # only keys got meaning
+      add_agent: [50, 70] 
+      add_adv: [50, 90] 
+      
+    dropout:
+      False

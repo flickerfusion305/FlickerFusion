@@ -1,0 +1,51 @@
+# --- QMIX specific parameters ---
+
+# use epsilon greedy action selector
+action_selector: "epsilon_greedy"
+epsilon_start: 1.0 #epy
+epsilon_finish: 0.3 #mrlib
+epsilon_anneal_time: 300000 # 500000 for marl #h
+epsilon_anneal_start: 0
+evaluation_epsilon: 0.0 #only zeroshot training
+
+runner: "parallel"
+batch_size_run: 8
+training_iters: 8
+
+# Parameters for meta-learning
+meta_lr_scheme: "DG-MAML"
+meta_alpha: 0.0005
+
+entity_last_action: True # Include the user-controlled agents' last actions (one_hot) in their entities
+
+batch_size: 64 # Number of episodes to train on
+buffer_size: 5000
+t_max: 1000000 # Stop running after this many timesteps
+
+# update the target network every {} episodes
+target_update_interval: 200
+
+# use the Q_Learner to train
+agent_output_type: "q"
+learner: "q_learner"
+double_q: True
+mixer: "flex_qmix"
+mixing_embed_dim: 32
+hypernet_embed: 128
+softmax_mixing_weights: True
+agent: "entity_attend_rnn"
+rnn_hidden_dim: 64
+mac: "entity_mac"
+attn_embed_dim: 16
+attn_n_heads: 4
+double_attn: False
+
+name: "qmix_atten"
+attn_head: 4
+
+reward_standardization: True # Reward Standardization
+
+obs_type: "qatten"
+
+env_args:
+  entity_scheme: True

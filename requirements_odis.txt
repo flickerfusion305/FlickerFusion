@@ -1,0 +1,20 @@
+h5py
+imageio
+matplotlib
+numpy
+probscale
+pygame
+pytest
+pyyaml
+sacred
+scipy
+seaborn
+snakeviz
+tensorboard
+tensorboard-logger
+tensorboardx
+torch
+torchaudio
+torchvision
+gym
+# git+https://github.com/oxwhirl/smac.git

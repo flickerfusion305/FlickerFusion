@@ -1,0 +1,118 @@
+name: "render"
+
+test_nepisode: 20
+test_interval: 300
+seed: 123456
+
+entity_dropout_train: True # entity dropout
+entity_dropout_inference: True # entity dropout
+train_dropout_type: damoed # damoed or random or flickerfusion
+test_dropout_type: damoed # damoed or random or flickerfusion
+test_dropout_domain_aware: True
+dropout_rainbow: True # change dropout entity (partial obs) every timestep
+rainbow_interval: 1
+
+batch_size_run: 1
+rnn_input_dim: 128
+rnn_hidden_dim: 128
+t_max: 5000000 # Stop running after this many timesteps
+
+runner: "episode"
+checkpoint_path: "./results/models/guard_flicker" 
+load_step: 0 
+evaluate: True
+render: True 
+eval_domain: 2
+#to render flicker
+render_flicker: False
+
+#to render attention matrix
+render_atten: False
+render_atten_ts: 0
+
+#to save model eval as gif
+save_gif: True
+save_gif_name: "test"
+
+# ALL -------------------------
+action_selector: "epsilon_greedy"
+epsilon_start: 1.0 
+epsilon_finish: 0.3 
+epsilon_anneal_time: 1000000 
+epsilon_anneal_start: 0
+training_iters: 8
+entity_last_action: True 
+batch_size: 32
+buffer_size: 5000 
+target_update_interval: 200 
+agent_output_type: "q" 
+learner: "q_learner" 
+double_q: True 
+mixing_embed_dim: 32
+hypernet_layers: 2 
+hypernet_embed: 128 
+lr: 0.0003
+reward_standardization: True # Reward Standardization
+
+
+# QMIX -----------------------
+# optimizer: "rmsprop" 
+# mixer: "qmix" 
+# env_args:
+#   entity_scheme: False
+
+
+# REFIL, Qatten -----------------------
+mixer: "flex_qmix"
+softmax_mixing_weights: True
+agent: "entity_attend_rnn"
+mac: "entity_mac"
+attn_embed_dim: 128
+attn_n_heads: 4
+double_attn: False
+env_args:
+  entity_scheme: True
+
+
+
+# CAMA ----------------------
+# mixer: "flex_qmix"
+# softmax_mixing_weights: True
+# agent: "entity_attend_rnn_icm"
+# mac: "icm_mac"
+# attn_embed_dim: 128
+# attn_n_heads: 4
+# lmbda: 0.5
+# ce_weight: 0.005
+# double_attn: False
+# no_msg: False
+# mi_message: True
+# msg_dim: 10
+# ia_weight: 0.01
+# ib_weight: 0.01
+# add_q: True
+# club_mi: True
+# club_ratio: 5 #times of maximize log q: times of minimize MI
+# logq_weight: 0.1
+# entropy_weight: 0
+# beta: 0.5
+# club_weight: 0.1
+# q_weight: 1.0
+
+# rnn_message: False
+# limit_msg: True #limit the mean of msg in [-1,1]
+# s_i_share_attn: True
+
+# sp_use_same_attn: True
+# reserve_ori_f: False
+# group: "random"
+
+# global_icm: False
+# gce_weight: 0.005
+
+# run: "icm"
+# save_entities_and_msg: False
+# rank_percent: 1.0
+
+# env_args:
+#   entity_scheme: True

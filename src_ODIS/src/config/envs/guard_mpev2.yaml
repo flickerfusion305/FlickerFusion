@@ -1,0 +1,48 @@
+env: mpe_fluid
+
+render_args:
+  srk: [1,2,4]
+  sr_color: ["#2CAFAC","#FB5607", "#1982C4"]
+
+twoagent: False
+agentnames:
+  - agent
+n_agents: 8
+
+env_args:
+  scenario_id: "simple_guard.py"
+  scenario_config:
+    episode_limit: 200
+    max_n_agents : 8
+    max_n_targets: 6
+    
+    # train(in-domain)
+    num_agents : [1, 3]
+    num_targets: [1, 2]
+    intra_trajectory: [1, 1]
+
+    empirical_study: 0 # 0 for same config with train / 1, 2 for OOD 1, 2
+    OOD:      
+      # OOD 1
+      - num_agents : [5]
+        num_targets: [4]
+        intra_trajectory: [3, 0]
+      # OOD 2
+      - num_agents : [5]
+        num_targets: [4]
+        intra_trajectory: [0, 2]
+
+    delta_entities: # only keys got meaning
+      add_agent: [50, 70] 
+      add_target: [50, 90] 
+      
+    dropout:
+      False
+
+# offline dataset
+offline_data_folder: "dataset"
+offline_data_name: "guard"
+offline_data_name: "replay_memory/123456_QMIX_simple_guard"
+offline_data_quality: "medium"
+offline_data_size: 2000
+offline_data_shuffle: False

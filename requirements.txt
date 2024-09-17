@@ -1,0 +1,54 @@
+absl-py == 2.1.0
+certifi == 2024.6.2
+charset-normalizer == 3.3.2
+cloudpickle == 3.0.0
+colorama == 0.4.6
+deepdiff == 7.0.1
+dm-env == 1.6
+dm-tree == 0.1.8
+docopt == 0.6.2
+enum34 == 1.1.10
+gitdb == 4.0.11
+GitPython == 3.1.43
+gym == 0.22.0
+gym-notices == 0.0.8
+idna == 3.7
+imageio == 2.34.2
+importlib_metadata == 8.0.0
+jsonpickle == 3.2.2
+mock == 5.1.0
+mpyq == 0.2.5
+munch == 4.0.0
+numpy == 1.24.4
+ordered-set == 4.1.0
+packaging == 24.1
+pillow == 10.4.0
+pip == 24.0
+portpicker == 1.6.0
+protobuf == 3.19.0
+psutil == 6.0.0
+py-cpuinfo == 9.0.0
+pyglet == 1.5.27
+PySC2 == 4.0.0
+PyYAML == 6.0.1
+requests == 2.32.3
+s2clientprotocol == 5.0.12.91115.0
+s2protocol == 5.0.12.91115.0
+sacred == 0.8.5
+scipy == 1.10.1
+setuptools == 69.5.1
+six == 1.16.0
+sk-video == 1.1.10
+smmap == 5.0.1
+tensorboard-logger == 0.1.0
+torch == 1.13.0
+typing_extensions == 4.12.2
+urllib3 == 2.2.2
+websocket-client == 1.8.0
+wheel == 0.43.0
+wrapt == 1.16.0
+zipp == 3.19.2
+matplotlib
+pandas
+seaborn
+openpyxl

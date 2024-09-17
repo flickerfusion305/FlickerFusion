@@ -1,0 +1,21 @@
+# ----- mpe setting config -----
+
+# get env information
+env: "mpe_fluid"
+# get task information
+task: "spread-medium"
+# define train tasks and test tasks
+train_tasks: ["train"]
+train_tasks_data_quality: {
+    "train": "medium",
+}
+
+test_tasks: ["test"]
+test_tasks_data_quality: {
+}
+
+# define additional pretrain tasks
+pretrain_tasks: ["train"]
+pretrain_tasks_data_quality: {
+    "train": "medium",
+}

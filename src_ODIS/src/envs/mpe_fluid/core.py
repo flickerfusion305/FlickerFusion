@@ -1,0 +1,327 @@
+import numpy as np
+
+# physical/external base state of all entites
+class EntityState(object):
+    def __init__(self):
+        # physical position
+        self.p_pos = None
+        # physical velocity
+        self.p_vel = None
+
+# state of agents (including communication and internal/mental state)
+class AgentState(EntityState):
+    def __init__(self):
+        super(AgentState, self).__init__()
+        # communication utterance
+        #self.c = None
+
+# action of the agent
+class Action(object):
+    def __init__(self):
+        # physical action
+        self.u = None
+        # communication action
+        #self.c = None
+
+# properties and state of physical world entity
+class Entity(object):
+    def __init__(self):
+        # name 
+        self.name = ''
+        # properties:
+        self.size = 0.050
+        # entity can move / be pushed
+        self.movable = False
+        # entity collides with others
+        self.collide = True
+        # material density (affects mass)
+        self.density = 25.0
+        # color
+        self.color = None
+        # max speed and accel
+        self.max_speed = None
+        self.accel = None
+        # state
+        self.state = EntityState()
+        # mass
+        self.initial_mass = 2.0
+
+    @property
+    def mass(self):
+        return self.initial_mass
+
+# properties of landmark entities
+class Landmark(Entity):
+     def __init__(self):
+        super(Landmark, self).__init__()
+
+# properties of agent entities
+class Agent(Entity):
+    def __init__(self):
+        super(Agent, self).__init__()
+        # agents are movable by default
+        self.movable = True
+        # cannot send communication signals
+        self.silent = False
+        # cannot observe the world
+        self.blind = False
+        # physical motor noise amount
+        self.u_noise = None
+        # communication noise amount
+        self.c_noise = None
+        # control range
+        self.u_range = 1.0
+        # state
+        self.state = AgentState()
+        # action
+        self.action = Action()
+        # script behavior to execute
+        self.action_callback = None
+
+# multi-agent world
+class World(object):
+    def __init__(self):
+        # list of agents and entities (can change at execution-time!)
+        self.agents = []
+        self.landmarks = []
+        
+        #for states update using simple mask dict
+        self.all_agents =  {}
+        self.all_landmarks = {}
+        
+        self.agents_num = 0
+        self.landmarks_num = 0
+        self.new_agent_que = []  # queue for adding new agents
+        self.del_agent_que = set()  # queue for deleting agents
+        self.new_landmark_que = []
+        self.del_landmark_que = set()
+        # distance matrix
+        self.distmat = []
+        self.relposmat = []
+        # entity name to index map for distance map
+        self.index_map = {}
+        # map for mask dead
+        self.dead_mask = {}
+        # communication channel dimensionality
+        #self.dim_c = 0
+        # position dimensionality
+        self.dim_p = 2
+        # color dimensionality
+        self.dim_color = 3
+        # simulation timestep
+        self.dt = 0.1
+        # physical damping
+        self.damping = 0.25
+        # contact response parameters
+        self.contact_force = 1e+2
+        self.contact_margin = 1e-3
+        self.time_step = 0
+        self.boundary = 1
+
+    # return all entities in the world
+    @property
+    def entities(self):
+        return self.agents + self.landmarks
+
+    # return all agents controllable by external policies
+    @property
+    def policy_agents(self):
+        return [agent for agent in self.agents if agent.action_callback is None]
+
+    # return all agents controlled by world scripts
+    @property
+    def scripted_agents(self):
+        return [agent for agent in self.agents if agent.action_callback is not None]
+
+    #for states update using simple mask dict
+    def set_dictionaries(self):
+        self.index_map = {entity.name: idx for idx, entity in enumerate(self.entities)}
+        self.all_agents = {agent.name: 0 for agent in self.agents}
+        self.all_landmarks = {landmark.name: 0 for landmark in self.landmarks}
+        
+    # calculate distance matrix using matrix
+    def calc_distmat(self):
+        pos = np.array([entity.state.p_pos for entity in self.entities])
+        relposmat = pos[:, np.newaxis, :] - pos[np.newaxis, :, :]
+        
+        distmat = np.sqrt(np.sum(relposmat ** 2, axis=-1))
+        self.distmat = distmat
+        self.relposmat = relposmat
+    
+    def get_distance(self, entity1, entity2):
+        idx1 = self.index_map[entity1.name]
+        idx2 = self.index_map[entity2.name]
+        return self.distmat[idx1][idx2]
+    
+    def get_distance_byname(self, entity1name, entity2name):
+        idx1 = self.index_map[entity1name]
+        idx2 = self.index_map[entity2name]
+        return self.distmat[idx1][idx2]
+    
+    def get_relpos(self, entity1, entity2):
+        idx1 = self.index_map[entity1.name]
+        idx2 = self.index_map[entity2.name]
+        return self.relposmat[idx1][idx2]
+    
+    def get_relpos_byname(self, entity1name, entity2name):
+        idx1 = self.index_map[entity1name]
+        idx2 = self.index_map[entity2name]
+        return self.relposmat[idx1][idx2]
+    
+    def update_distance(self, entity1, entity2):
+        idx1 = self.index_map[entity1.name]
+        idx2 = self.index_map[entity2.name]
+        self.relposmat[idx1][idx2] = entity1.state.p_pos - entity2.state.p_pos
+        self.relposmat[idx2][idx1] = -self.relposmat[idx1][idx2]
+        self.distmat[idx1][idx2] = np.sqrt(np.sum(self.relposmat[idx1][idx2]**2))
+        self.distmat[idx2][idx1] = self.distmat[idx1][idx2]
+    
+    # update state of the world
+    def step(self):
+        # set actions for scripted agents 
+        self.time_step += 1
+        for agent in self.scripted_agents:
+            agent.action = agent.action_callback(agent, self)
+        # gather forces applied to entities
+        p_force = [None] * len(self.entities)
+        # apply agent physical controls
+        p_force = self.apply_action_force(p_force)
+        # apply environment forces
+        p_force = self.apply_environment_force(p_force)
+        # integrate physical state
+        self.integrate_state(p_force)
+        # update agent state
+        for agent in self.agents:
+            self.update_agent_state(agent)
+
+    # gather agent action forces
+    def apply_action_force(self, p_force):
+        # set applied forces
+        for i,agent in enumerate(self.agents):
+            if agent.movable:
+                noise = np.random.randn(*agent.action.u.shape) * agent.u_noise if agent.u_noise else 0.0
+                p_force[i] = agent.action.u + noise                
+        return p_force
+
+    # gather physical forces acting on entities
+    def apply_environment_force(self, p_force):
+        # simple (but inefficient) collision response
+        for a,entity_a in enumerate(self.entities):
+            for b,entity_b in enumerate(self.entities):
+                if(b <= a): continue
+                [f_a, f_b] = self.get_collision_force(entity_a, entity_b)
+                if(f_a is not None):
+                    if(p_force[a] is None): p_force[a] = 0.0
+                    p_force[a] = f_a + p_force[a] 
+                if(f_b is not None):
+                    if(p_force[b] is None): p_force[b] = 0.0
+                    p_force[b] = f_b + p_force[b]        
+        return p_force
+
+    # integrate physical state
+    def integrate_state(self, p_force):
+        for i, entity in enumerate(self.entities):
+            if not entity.movable:
+                continue
+            # if self.boundary_collision(entity) is not None:
+            #     force, pos = self.boundary_collision(entity)
+            #     entity.state.p_vel = np.zeros(entity.state.p_vel.shape)
+            #     entity.state.p_vel += (force / entity.mass) * self.dt
+            #     entity.state.p_pos = pos
+            else:
+                entity.state.p_pos += entity.state.p_vel * self.dt
+                entity.state.p_vel = entity.state.p_vel * (1 - self.damping)
+                if p_force[i] is not None:
+                    entity.state.p_vel += (p_force[i] / entity.mass) * self.dt
+            if entity.max_speed is not None:
+                speed = np.linalg.norm(entity.state.p_vel)
+                if speed > entity.max_speed:
+                    entity.state.p_vel = entity.state.p_vel / speed * entity.max_speed
+
+    def update_agent_state(self, agent):
+        # set communication state (directly for now)
+        #if agent.silent:
+        #    agent.state.c = np.zeros(self.dim_c)
+        #else:
+        #    noise = np.random.randn(*agent.action.c.shape) * agent.c_noise if agent.c_noise else 0.0
+        #    agent.state.c = agent.action.c + noise
+        pass   
+
+    # get collision forces for any contact between two entities
+    def get_collision_force(self, entity_a, entity_b):
+        if (not entity_a.collide) or (not entity_b.collide):
+            return [None, None]  # not a collider
+        if entity_a is entity_b:
+            return [None, None]  # don't collide against itself
+        # compute actual distance between entities
+        #old version        
+        #delta_pos = entity_a.state.p_pos - entity_b.state.p_pos
+        #dist = np.sqrt(np.sum(np.square(delta_pos)))
+        
+        # numpy accelerated
+        if entity_a.state.p_pos.all() == entity_b.state.p_pos.all():
+            entity_a.state.p_pos += np.random.uniform(-1e-9,+1e-9,2)
+            self.update_distance(entity_a, entity_b)
+        delta_pos = self.get_relpos(entity_a,entity_b)
+        dist = self.get_distance(entity_a, entity_b)
+
+        # minimum allowable distance
+        dist_min = entity_a.size + entity_b.size
+        # softmax penetration
+        k = self.contact_margin
+        penetration = np.logaddexp(0, -(dist - dist_min) / k) * k
+        if dist == 0: 
+            dist = np.random.uniform(-1e-9,+1e-9,2)
+        force = self.contact_force * delta_pos / dist * penetration
+        force_a = +force if entity_a.movable else None
+        force_b = -force if entity_b.movable else None
+        return [force_a, force_b]
+    
+    def boundary_collision(self, entity):
+        dist_min = entity.size
+        k = self.contact_margin
+        x0, y0 = entity.state.p_pos
+        next_pos = entity.state.p_pos + entity.state.p_vel * self.dt
+        x1, y1 = next_pos
+
+        pos_point = [self.boundary+0.01, self.boundary+0.01]
+        neg_point = [-p for p in pos_point]
+      
+        if neg_point[1] <= y0 <= pos_point[1]:
+            # left side collision
+            if abs(x0 - neg_point[0]) < entity.size or x1 <= neg_point[0] <= x0 or x0 <= neg_point[0] <= x1:
+                dist = abs(x0 - neg_point[0])
+                delta_pos = entity.state.p_pos - np.array([neg_point[0], y0])
+                # delta_pos = self.get_relpos(entity, np.array([neg_point[0], y0]))
+                penetration = np.logaddexp(0, -(dist/4 - dist_min) / (k/4)) * k
+                force = self.contact_force * delta_pos / dist * penetration
+                x = neg_point[0]+entity.size if x0 > neg_point[0] else neg_point[0]-entity.size
+                return force, np.array([x, y0])
+            # right side collision
+            elif abs(x0 - pos_point[0]) < entity.size or x0 <= pos_point[0] <= x1 or x1 <= pos_point[0] <= x0:
+                dist = abs(x0 - pos_point[0])
+                delta_pos = entity.state.p_pos - np.array([pos_point[0], y0])
+                penetration = np.logaddexp(0, -(dist - dist_min) / k) * k
+                force = self.contact_force * delta_pos / dist * penetration
+                x = pos_point[0]+entity.size if x0 > pos_point[0] else pos_point[0]-entity.size
+                return force, np.array([x, y0])
+            
+        if neg_point[0] <= x0 <= pos_point[0]:
+            # down side collision
+            if abs(y0 - neg_point[1]) < entity.size or y1 <= neg_point[1] <= y0 or y0 <= neg_point[1] <= y1:
+                dist = abs(y0 - neg_point[1])
+                delta_pos = entity.state.p_pos - np.array([x0, neg_point[1]])
+                # delta_pos = self.get_relpos(entity, np.array([x0, neg_point[1]]))
+                penetration = np.logaddexp(0, -(dist/4 - dist_min) / (k/4)) * k
+                force = self.contact_force * delta_pos / dist * penetration
+                y = neg_point[1]+entity.size if y0 > neg_point[1] else neg_point[1]-entity.size
+                return force, np.array([x0, y])
+            # up side collision
+            elif abs(y0 - pos_point[1]) < entity.size or y0 <= pos_point[1] <= y1 or y1 <= pos_point[1] <= y0:
+                dist = abs(y0 - pos_point[1])
+                delta_pos = entity.state.p_pos - np.array([x0, pos_point[1]])
+                # delta_pos = self.get_relpos(entity, np.array([x0, pos_point[1]]))
+                penetration = np.logaddexp(0, -(dist/4 - dist_min) / (k/4)) * k
+                force = self.contact_force * delta_pos / dist * penetration
+                y = pos_point[1]+entity.size if y0 > pos_point[1] else pos_point[1]-entity.size
+                return force, np.array([x0, y])

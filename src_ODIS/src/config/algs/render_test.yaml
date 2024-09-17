@@ -1,0 +1,64 @@
+name: "render"
+
+test_nepisode: 20
+test_interval: 300
+seed: 123456
+
+
+batch_size_run: 1
+t_max: 5000000 # Stop running after this many timesteps
+use_cuda: False
+runner: "mt_episode"
+checkpoint_path: "./results/1" 
+eval_domain: 2
+load_step: 0 
+evaluate: True
+render: True 
+
+#to save model eval as gif
+save_gif: True
+save_gif_name: "hunt_odisood2"
+
+# -------------------------
+batch_size: 32 # Number of episodes to train on
+
+# only use for initializing action selector
+action_selector: "epsilon_greedy"
+epsilon_start: 1.0
+epsilon_finish: 0.05
+epsilon_anneal_time: 5000
+
+# update the target network every _ steps
+target_update_interval: 200
+
+# use the Q_Learner to train
+agent_output_type: "q"
+learner: "odis_learner"
+double_q: True
+mixer: "mt_qattn"
+mixing_embed_dim: 32
+hypernet_layers: 2
+hypernet_embed: 128
+
+# agent type
+agent: "mt_odis"
+
+# mac
+mac: "mt_odis_mac"
+
+# params about trans mixing network
+entity_embed_dim: 64
+attn_embed_dim: 8
+skill_dim: 3
+c_step: 1
+beta: 0.001
+coef_conservative: 5.0
+coef_dist: 5.0
+pretrain_steps: 10000
+pretrain: False
+head: 1
+depth: 1
+
+# params about observation decomposition
+id_length: 4
+max_agent: 15
