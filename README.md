@@ -1,4 +1,4 @@
-# Benchmark and Method for Domain Generalizing MARL
+# FlickerFusion: Intra-trajectory Domain Generalizing Multi-agent Reinforcement Learning
 
 ## Contents
 
