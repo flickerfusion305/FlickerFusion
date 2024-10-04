@@ -3,11 +3,11 @@ name: QMIX_atten_dropout
 # entity dropout
 entity_dropout_train: True # entity dropout
 entity_dropout_inference: True # entity dropout
-train_dropout_type: random # damoed or random or flickerfusion
-test_dropout_type: random # damoed or random or flickerfusion
+train_dropout_type: random # damoed or random
+test_dropout_type: random # damoed or random
 test_dropout_domain_aware: True
-dropout_rainbow: True # change dropout entity (partial obs) every timestep
-rainbow_interval: 1
+dropout_flicker: True # change dropout entity (partial obs) every timestep
+flicker_interval: 1
 
 # use epsilon greedy action selector
 action_selector: "epsilon_greedy"
