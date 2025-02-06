@@ -14,6 +14,11 @@
 - [System specifications](#system-specifications)
 - [Reference](#reference)
 
+## Contact
+This repo is not maintained as it was primarily used for anonymous submission. Feel free to contact the first author if needed.
+Woosung (Reiss) Koh: reiss.koh@gmail.com (https://github.com/reiss-koh) 
+
+
 ## Project site
 
 Demo video renderings of trained models are available on [our project site](https://flickerfusion305.github.io/).
