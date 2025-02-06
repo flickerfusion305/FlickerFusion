@@ -242,4 +242,11 @@ We recommend at least 24GB VRAM and 16 GB of RAM.
 
 
 ## Reference
-Please consider citing the original MPE paper and the new MPEv2 paper. MPEv2 is under review and not yet available here to preserve anonymity.
+@inproceedings{
+koh2025flickerfusion,
+title={FlickerFusion: Intra-trajectory Domain Generalizing Multi-agent Reinforcement Learning},
+author={Woosung Koh and Wonbeen Oh and Siyeol Kim and Suhin Shin and Hyeongjin Kim and Jaein Jang and Junghyun Lee and Se-Young Yun},
+booktitle={The Thirteenth International Conference on Learning Representations (ICLR)},
+year={2025},
+url={https://openreview.net/forum?id=MRYyOaNxh3}
+}
