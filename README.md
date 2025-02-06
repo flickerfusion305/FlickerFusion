@@ -248,5 +248,5 @@ title={FlickerFusion: Intra-trajectory Domain Generalizing Multi-agent Reinforce
 author={Woosung Koh and Wonbeen Oh and Siyeol Kim and Suhin Shin and Hyeongjin Kim and Jaein Jang and Junghyun Lee and Se-Young Yun},
 booktitle={The Thirteenth International Conference on Learning Representations (ICLR)},
 year={2025},
-url={https://openreview.net/forum?id=MRYyOaNxh3}
+url={{https://openreview.net/forum?id=MRYyOaNxh3}}
 }
