@@ -1,4 +1,4 @@
-# [ICLR 2025]FlickerFusion: Intra-trajectory Domain Generalizing Multi-agent Reinforcement Learning
+# [ICLR 2025] FlickerFusion: Intra-trajectory Domain Generalizing Multi-agent Reinforcement Learning
 
 ## Contents
 
